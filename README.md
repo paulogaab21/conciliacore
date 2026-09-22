@@ -1,30 +1,62 @@
-# ConciliaCore
+<p align="center">
+  <img src="./public/favicon.svg" width="84" alt="ConciliaCore logo" />
+</p>
 
-**A payment reconciliation platform built around reliable ingestion, deterministic rules, exception management, and operational traceability.**
+<h1 align="center">ConciliaCore</h1>
 
-ConciliaCore receives signed payment webhooks, persists each accepted event together with a transactional outbox entry, and processes it asynchronously. The reconciliation engine compares the resulting payment projection against orders. Any mismatch becomes an operational case with evidence, ownership, resolution history, and an audit trail.
+<p align="center">
+  <strong>Reliable payment reconciliation, from signed webhook to audited resolution.</strong>
+</p>
 
-The project is intentionally implemented as a modular monolith with a separate worker process. It demonstrates production-oriented engineering decisions without introducing distributed-system complexity that the current scale does not require.
+<p align="center">
+  Signed ingestion&nbsp; → &nbsp;transactional outbox&nbsp; → &nbsp;deterministic rules&nbsp; → &nbsp;operational cases
+</p>
 
-The interface defaults to Brazilian Portuguese and can be switched to English from the header. The preference is stored in a cookie and drives server-rendered metadata, the document language, client copy, currency, dates, and relative time.
+<p align="center">
+  <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js_16-111111?style=flat-square&logo=nextdotjs&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+  <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL_17-4169E1?style=flat-square&logo=postgresql&logoColor=white" />
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white" />
+  <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-2E7D62?style=flat-square" /></a>
+</p>
 
-![ConciliaCore reconciliation dashboard](./docs/images/dashboard.png)
+<p align="center">
+  <a href="#product-walkthrough"><strong>Product tour</strong></a>
+  ·
+  <a href="#architecture"><strong>Architecture</strong></a>
+  ·
+  <a href="#reliability-guarantees"><strong>Guarantees</strong></a>
+  ·
+  <a href="#run-locally"><strong>Run locally</strong></a>
+  ·
+  <a href="#testing-strategy"><strong>Tests</strong></a>
+  ·
+  <a href="#known-boundaries"><strong>Boundaries</strong></a>
+</p>
 
-## Table of contents
+<br />
 
-- [What the system solves](#what-the-system-solves)
-- [Product walkthrough](#product-walkthrough)
-- [Architecture](#architecture)
-- [Reliability guarantees](#reliability-guarantees)
-- [Reconciliation rules](#reconciliation-rules)
-- [Case lifecycle](#case-lifecycle)
-- [Authorization model](#authorization-model)
-- [Technology stack](#technology-stack)
-- [Run locally](#run-locally)
-- [Testing strategy](#testing-strategy)
-- [Security model](#security-model)
-- [Known boundaries](#known-boundaries)
-- [Repository structure](#repository-structure)
+<p align="center">
+  <img src="./docs/images/dashboard.png" width="100%" alt="ConciliaCore reconciliation dashboard" />
+</p>
+
+<p align="center">
+  <sub>Operations overview with reconciliation health, open exceptions, provider distribution, and recent activity.</sub>
+</p>
+
+## Engineering at a glance
+
+| System property | Concrete implementation |
+| --- | --- |
+| **Durable ingestion** | The event, delivery record, and outbox entry commit atomically before the API returns `202 Accepted`. |
+| **At-least-once processing** | Unique provider identities, idempotent upserts, conditional worker claims, bounded retries, and stale-lock recovery. |
+| **Deterministic domain** | Reconciliation is a pure function; monetary rules operate on integer cents and produce stable case fingerprints. |
+| **Human operations** | Exceptions carry evidence, ownership, lifecycle transitions, resolution history, and role-based actions. |
+| **Tenant isolation** | The organization comes from the validated server-side session, never from a mutation body. |
+| **Executable evidence** | Unit, route, PostgreSQL integration, and Playwright tests cover the critical guarantees and access rules. |
+
+> [!NOTE]
+> ConciliaCore is a production-oriented reference implementation, not a claim of production readiness. The [known boundaries](#known-boundaries) and remaining hardening work are documented explicitly.
 
 ## What the system solves
 
@@ -44,39 +76,71 @@ This separation keeps transport reliability, business rules, and human investiga
 
 ## Product walkthrough
 
-### 1. Controlled demo access
+### 01 — Role-aware access
 
 The seeded environment includes administrator, analyst, and read-only auditor profiles. Authentication uses a signed session cookie, while role and organization membership are reloaded from the database for every validated session.
 
-The sign-in screen below shows the default Brazilian Portuguese experience. The same interface can be switched to English before authentication or from the authenticated header.
+The interface defaults to Brazilian Portuguese and can be switched to English before authentication or from the authenticated header. The locale preference also drives server-rendered metadata, document language, currency, dates, and relative time.
 
-![ConciliaCore sign-in screen](./docs/images/login.png)
+<p align="center">
+  <img src="./docs/images/login.png" width="100%" alt="ConciliaCore sign-in screen" />
+</p>
 
-### 2. Operational overview and reliability
+<p align="center">
+  <sub>Seeded roles make authorization behavior reproducible without requiring an external identity provider.</sub>
+</p>
+
+### 02 — Operational health
 
 The dashboard summarizes processed volume, reconciliation rate, open exceptions, webhook delivery health, provider distribution, and recent activity. Its reliability view exposes delivery outcomes, duplicate handling, provider distribution, and the idempotency contract instead of hiding those concerns behind aggregate numbers.
 
-![ConciliaCore webhook reliability view](./docs/images/reliability.png)
+<p align="center">
+  <img src="./docs/images/reliability.png" width="100%" alt="ConciliaCore webhook reliability view" />
+</p>
 
-### 3. Engineering guarantees made visible
+<p align="center">
+  <sub>Delivery outcomes and duplicate handling remain visible to the operator.</sub>
+</p>
+
+### 03 — Engineering evidence
 
 The product includes an engineering view that connects each behavior to its implementation evidence. It covers webhook verification, database constraints, outbox recovery, tenant scoping, deterministic decisions, and known limits.
 
-![ConciliaCore engineering guarantees](./docs/images/engineering-guarantees.png)
+<p align="center">
+  <img src="./docs/images/engineering-guarantees.png" width="100%" alt="ConciliaCore engineering guarantees" />
+</p>
 
-### 4. Human exception management
+<p align="center">
+  <sub>Runtime behavior is connected to its concrete implementation and documented limitations.</sub>
+</p>
+
+### 04 — Case investigation
 
 Each case exposes the triggered rule, related order and payment, monetary difference, structured evidence, current owner, lifecycle state, and resolution form. Administrators and analysts may claim and resolve cases; auditors remain read-only.
 
-![ConciliaCore exception investigation drawer](./docs/images/case-investigation.png)
+<p align="center">
+  <img src="./docs/images/case-investigation.png" width="100%" alt="ConciliaCore exception investigation drawer" />
+</p>
 
-### 5. Operational audit trail
+<p align="center">
+  <sub>Every exception keeps the rule, financial context, evidence, owner, and decision in one workflow.</sub>
+</p>
+
+### 05 — Operational traceability
 
 Authentication events, reconciliation runs, duplicate deliveries, case assignments, case resolutions, automatic transitions, and payment processing are recorded with actor, timestamp, entity, summary, and safe operational metadata.
 
-![ConciliaCore audit trail](./docs/images/audit-trail.png)
+<p align="center">
+  <img src="./docs/images/audit-trail.png" width="100%" alt="ConciliaCore audit trail" />
+</p>
+
+<p align="center">
+  <sub>Audit records expose who changed what, when it changed, and the safe metadata attached to the event.</sub>
+</p>
 
 ## Architecture
+
+The system is a modular monolith with an independently deployed worker. That boundary keeps domain rules and database transactions easy to inspect while isolating asynchronous processing, retries, and recovery from HTTP request handling.
 
 ```mermaid
 flowchart LR
@@ -122,21 +186,21 @@ The acknowledgement is sent only after the ingestion transaction commits. A succ
 
 | Concern | Implemented behavior | Evidence |
 | --- | --- | --- |
-| Request authenticity | HMAC-SHA256 covers `timestamp.provider.rawBody` and uses constant-time comparison | `src/lib/crypto.ts` |
-| Replay window | Signed timestamps must be within a five-minute tolerance | webhook route |
-| Payload protection | The body is rejected while streaming once it exceeds 256 KiB | webhook route |
-| Schema integrity | Zod validates the external event before persistence | webhook route |
-| Secret storage | Webhook secrets use AES-256-GCM with a random IV | `src/lib/crypto.ts` |
-| Ingestion atomicity | Payment event, accepted delivery, and outbox message commit together | webhook route |
-| Ingestion idempotency | `organization + provider + external event ID` is unique | Prisma schema |
-| Materialization idempotency | Payment transactions are upserted by provider identity | worker/outbox service |
-| Worker concurrency | A conditional state update allows only one worker to claim a candidate | `src/lib/outbox.ts` |
-| Retry policy | Bounded exponential backoff with jitter and stale-lock recovery | `src/lib/outbox.ts` |
-| Monetary precision | Business rules compare integer cents, never floating-point currency | reconciliation domain |
-| Case identity | A deterministic fingerprint is unique within each organization | reconciliation domain and schema |
-| Result publication | Case updates, lifecycle transitions, run completion, and audits share a serializable transaction | reconciliation service |
-| Transaction conflicts | Serializable conflicts are retried up to three times with explicit timeouts | reconciliation service |
-| Tenant isolation | Authenticated queries derive `organizationId` from the server-side session | API routes |
+| Request authenticity | HMAC-SHA256 covers `timestamp.provider.rawBody` and uses constant-time comparison | [`src/lib/crypto.ts`](./src/lib/crypto.ts) |
+| Replay window | Signed timestamps must be within a five-minute tolerance | [webhook route](./src/app/api/webhooks/payments/%5BorganizationSlug%5D/route.ts) |
+| Payload protection | The body is rejected while streaming once it exceeds 256 KiB | [webhook route](./src/app/api/webhooks/payments/%5BorganizationSlug%5D/route.ts) |
+| Schema integrity | Zod validates the external event before persistence | [webhook route](./src/app/api/webhooks/payments/%5BorganizationSlug%5D/route.ts) |
+| Secret storage | Webhook secrets use AES-256-GCM with a random IV | [`src/lib/crypto.ts`](./src/lib/crypto.ts) |
+| Ingestion atomicity | Payment event, accepted delivery, and outbox message commit together | [webhook route](./src/app/api/webhooks/payments/%5BorganizationSlug%5D/route.ts) |
+| Ingestion idempotency | `organization + provider + external event ID` is unique | [Prisma schema](./prisma/schema.prisma) |
+| Materialization idempotency | Payment transactions are upserted by provider identity | [`src/lib/outbox.ts`](./src/lib/outbox.ts) |
+| Worker concurrency | A conditional state update allows only one worker to claim a candidate | [`src/lib/outbox.ts`](./src/lib/outbox.ts) |
+| Retry policy | Bounded exponential backoff with jitter and stale-lock recovery | [`src/lib/outbox.ts`](./src/lib/outbox.ts) |
+| Monetary precision | Business rules compare integer cents, never floating-point currency | [reconciliation domain](./src/domain/reconciliation.ts) |
+| Case identity | A deterministic fingerprint is unique within each organization | [domain rules](./src/domain/reconciliation.ts) and [schema](./prisma/schema.prisma) |
+| Result publication | Case updates, lifecycle transitions, run completion, and audits share a serializable transaction | [reconciliation service](./src/lib/reconciliation-service.ts) |
+| Transaction conflicts | Serializable conflicts are retried up to three times with explicit timeouts | [reconciliation service](./src/lib/reconciliation-service.ts) |
+| Tenant isolation | Authenticated queries derive `organizationId` from the server-side session | [API routes](./src/app/api) |
 
 The delivery model is **at least once with idempotent effects**. The project does not present itself as an exactly-once system.
 
