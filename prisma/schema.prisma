@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  ANALYST
+  AUDITOR
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PARTIALLY_PAID
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  CONFIRMED
+  REFUNDED
+}
+
+enum PaymentEventType {
+  PAYMENT_CONFIRMED
+  PAYMENT_REFUNDED
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum CaseType {
+  UNMATCHED_PAYMENT
+  AMOUNT_MISMATCH
+  DUPLICATE_PAYMENT
+  ORDER_STATUS_MISMATCH
+  REFUND_MISMATCH
+  MISSING_PAYMENT
+}
+
+enum CaseSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CaseStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum CaseResolutionSource {
+  MANUAL
+  AUTOMATIC
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ReconciliationRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model Organization {
+  id                       String              @id @default(cuid())
+  slug                     String              @unique
+  name                     String
+  legalName                String?
+  webhookSecretEncrypted   String
+  dataRetentionDays        Int                 @default(90)
+  createdAt                DateTime            @default(now())
+  updatedAt                DateTime            @updatedAt
+  users                    User[]
+  orders                   Order[]
+  payments                 Payment[]
+  paymentEvents            PaymentEvent[]
+  webhookDeliveries        WebhookDelivery[]
+  reconciliationCases      ReconciliationCase[]
+  reconciliationRuns       ReconciliationRun[]
+  auditLogs                AuditLog[]
+  outboxEvents             OutboxEvent[]
+}
+
+model User {
+  id                String               @id @default(cuid())
+  organizationId    String
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name              String
+  email             String               @unique
+  passwordHash      String
+  role              UserRole             @default(ANALYST)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  assignedCases     ReconciliationCase[] @relation("CaseAssignee")
+  auditLogs         AuditLog[]
+
+  @@index([organizationId])
+}
+
+model Order {
+  id                     String               @id @default(cuid())
+  organizationId         String
+  organization           Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  externalId             String
+  customerName           String
+  customerDocumentMasked String?
+  amountCents            Int
+  currency               String               @default("BRL")
+  status                 OrderStatus          @default(PENDING)
+  dueAt                  DateTime?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  reconciliationCases    ReconciliationCase[]
+
+  @@unique([organizationId, externalId])
+  @@index([organizationId, status])
+  @@index([organizationId, createdAt])
+}
+
+model Payment {
+  id                  String               @id @default(cuid())
+  organizationId      String
+  organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider            String
+  transactionId       String
+  orderExternalId     String?
+  amountCents         Int
+  currency            String               @default("BRL")
+  status              PaymentStatus        @default(CONFIRMED)
+  paidAt              DateTime
+  refundedAt          DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  reconciliationCases ReconciliationCase[]
+
+  @@unique([organizationId, provider, transactionId])
+  @@index([organizationId, orderExternalId])
+  @@index([organizationId, paidAt])
+}
+
+model PaymentEvent {
+  id                String             @id @default(cuid())
+  organizationId    String
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider          String
+  providerEventId   String
+  transactionId     String
+  orderExternalId   String?
+  type              PaymentEventType
+  amountCents       Int
+  currency          String             @default("BRL")
+  status            ProcessingStatus   @default(PENDING)
+  occurredAt        DateTime
+  receivedAt        DateTime           @default(now())
+  processedAt       DateTime?
+  failureReason     String?
+  rawPayload        Json
+
+  @@unique([organizationId, provider, providerEventId])
+  @@index([organizationId, status, receivedAt])
+  @@index([organizationId, transactionId])
+}
+
+model WebhookDelivery {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  provider          String
+  deliveryId        String
+  eventType         String
+  payloadHash       String
+  signatureValid    Boolean
+  duplicate         Boolean      @default(false)
+  responseStatus    Int
+  failureCode       String?
+  processingTimeMs  Int
+  receivedAt        DateTime     @default(now())
+
+  @@index([organizationId, receivedAt])
+  @@index([organizationId, deliveryId])
+}
+
+model ReconciliationCase {
+  id                String        @id @default(cuid())
+  organizationId    String
+  organization      Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fingerprint       String
+  type              CaseType
+  severity          CaseSeverity
+  status            CaseStatus    @default(OPEN)
+  title             String
+  description       String
+  differenceCents   Int?
+  evidence          Json
+  orderId           String?
+  order             Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  paymentId         String?
+  payment           Payment?      @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  assignedToId      String?
+  assignedTo        User?         @relation("CaseAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  resolution        String?
+  resolutionSource  CaseResolutionSource?
+  resolvedAt        DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@unique([organizationId, fingerprint])
+  @@index([organizationId, status, severity])
+  @@index([organizationId, createdAt])
+}
+
+model ReconciliationRun {
+  id                String                   @id @default(cuid())
+  organizationId    String
+  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  status            ReconciliationRunStatus  @default(RUNNING)
+  trigger           String
+  ordersScanned     Int                      @default(0)
+  paymentsScanned   Int                      @default(0)
+  matchedCount      Int                      @default(0)
+  caseCount         Int                      @default(0)
+  durationMs        Int?
+  failureReason     String?
+  startedAt         DateTime                 @default(now())
+  completedAt       DateTime?
+
+  @@index([organizationId, startedAt])
+}
+
+model AuditLog {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actorId           String?
+  actor             User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action            String
+  entityType        String
+  entityId          String?
+  summary           String
+  metadata          Json?
+  ipAddress         String?
+  createdAt         DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, entityType, entityId])
+}
+
+model OutboxEvent {
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  aggregateType     String
+  aggregateId       String
+  eventType         String
+  payload           Json
+  status            OutboxStatus @default(PENDING)
+  attempts          Int          @default(0)
+  nextAttemptAt     DateTime      @default(now())
+  lockedAt          DateTime?
+  processedAt       DateTime?
+  lastError         String?
+  createdAt         DateTime     @default(now())
+
+  @@index([status, nextAttemptAt])
+  @@index([organizationId, createdAt])
+}

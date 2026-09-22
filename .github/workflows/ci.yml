@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: web
+          push: false
+          tags: conciliacore:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: conciliacore
+          POSTGRES_PASSWORD: conciliacore
+          POSTGRES_DB: conciliacore
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U conciliacore -d conciliacore"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://conciliacore:conciliacore@localhost:5432/conciliacore?schema=public
+      AUTH_SECRET: ci-auth-secret-with-at-least-32-characters
+      ENCRYPTION_KEY: ci-encryption-key-with-at-least-32-chars
+      DEMO_WEBHOOK_SECRET: demo-webhook-secret-change-me
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      WORKER_POLL_MS: 2000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - run: npm run test:integration
+      - run: npm run build
+      - run: npm run test:e2e

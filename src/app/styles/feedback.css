@@ -1,0 +1,97 @@
+/* Feedback and loading */
+.toast {
+  align-items: center;
+  background: #173b34;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 10px;
+  bottom: 24px;
+  box-shadow: var(--shadow-lg);
+  color: white;
+  display: flex;
+  font-size: 10px;
+  gap: 9px;
+  max-width: 390px;
+  padding: 12px 13px;
+  position: fixed;
+  right: 24px;
+  z-index: 100;
+}
+
+.toast--success > svg { color: #5be3b8; }
+.toast--error { background: #582f30; }
+.toast--error > svg { color: #ffaaa8; }
+.toast span { flex: 1; }
+.toast button { background: transparent; color: #b6cac4; display: flex; padding: 2px; }
+
+.skeleton-page { display: flex; flex-direction: column; gap: 17px; }
+.skeleton { animation: skeleton 1.4s ease-in-out infinite; background: linear-gradient(90deg, #e8edeb, #f5f7f6, #e8edeb); background-size: 200% 100%; border-radius: 12px; }
+.skeleton--heading { height: 62px; width: 45%; }
+.skeleton-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, 1fr); }
+.skeleton--metric { height: 122px; }
+.skeleton--panel { height: 350px; }
+.skeleton--table { height: 280px; }
+@keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.empty-state { align-items: center; background: white; border: 1px solid var(--line); border-radius: 14px; color: var(--ink-faint); display: flex; flex-direction: column; margin-top: 40px; padding: 70px 20px; }
+.empty-state h2 { color: var(--ink); margin: 11px 0 5px; }
+.empty-state p { font-size: 10px; margin: 0; }
+.mobile-scrim { display: none; }
+
+@media (max-width: 1180px) {
+  .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analytics-grid { grid-template-columns: minmax(0, 1.5fr) minmax(270px, 0.8fr); }
+  .bottom-grid { grid-template-columns: 1fr; }
+  .reliability-panel { min-height: 260px; }
+  .login-story { padding: 30px; }
+  .login-story__content h1 { font-size: 51px; }
+}
+
+@media (max-width: 960px) {
+  .sidebar { box-shadow: 20px 0 60px rgb(0 0 0 / 18%); transform: translateX(-105%); transition: transform 180ms ease; }
+  .sidebar--open { transform: translateX(0); }
+  .sidebar__close { display: block; }
+  .mobile-scrim { background: rgb(5 25 20 / 38%); border: 0; display: block; inset: 0; opacity: 0; pointer-events: none; position: fixed; transition: opacity 180ms ease; z-index: 29; }
+  .mobile-scrim--visible { opacity: 1; pointer-events: auto; }
+  .main-area { margin-left: 0; }
+  .mobile-menu { display: block; }
+  .topbar__search { margin-left: 12px; }
+  .login-page { grid-template-columns: 1fr; }
+  .login-story { display: none; }
+  .login-panel { min-height: 100vh; }
+  .login-panel__mobile-brand { display: block; left: 28px; position: absolute; top: 25px; }
+}
+
+@media (max-width: 760px) {
+  .content-area { padding: 17px 14px 35px; }
+  .topbar { height: 57px; padding: 0 13px; }
+  .topbar__search span,
+  .topbar__search kbd,
+  .environment,
+  .topbar__divider { display: none; }
+  .topbar__search { flex: 1; width: auto; }
+  .page-heading { align-items: flex-start; flex-direction: column; gap: 15px; }
+  .page-heading__actions { width: 100%; }
+  .page-heading__actions > * { flex: 1; }
+  .page-heading__actions .button { width: 100%; }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .analytics-grid,
+  .transaction-grid,
+  .audit-layout { grid-template-columns: 1fr; }
+  .table-toolbar { align-items: stretch; flex-direction: column; }
+  .table-search { width: 100%; }
+  .filter-tabs { overflow-x: auto; }
+  .filter-tabs button { flex: 1; white-space: nowrap; }
+  .bar-chart { grid-template-columns: 42px 1fr; padding-right: 12px; }
+  .bar-chart__plot { gap: 8px; padding: 0; }
+  .chart-summary span { padding: 0 7px; }
+  .demo-banner { align-items: flex-start; gap: 10px; }
+  .demo-banner > div { align-items: flex-start; }
+  .demo-banner button { white-space: nowrap; }
+  .login-panel { padding: 90px 24px 55px; }
+  .login-panel h2 { font-size: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+  .spin, .skeleton { animation: none; }
+}

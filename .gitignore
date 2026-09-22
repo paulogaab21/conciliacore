@@ -1,0 +1,61 @@
+# dependencies
+/node_modules/
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/dist
+
+# testing
+/coverage
+/playwright-report/
+/test-results/
+
+# local environment
+.env*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# system/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# generated
+/src/generated/
+next-env.d.ts
+*.tsbuildinfo
+
+# root documentation allowlist
+/*.md
+!/README.md
+!/CONTRIBUTING.md
+!/SECURITY.md
+
+# public documentation and utility allowlist
+/docs/*
+!/docs/*.md
+!/docs/images/
+!/docs/images/**
+/scripts/*
+!/scripts/generate-icons.ts
+!/scripts/send-demo-webhooks.ts
+
+# local media
+*.mp4
+*.webm
+*.mov
+*.mkv
+*.mp3
+*.wav
+*.srt
+*.vtt
