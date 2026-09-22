@@ -1,0 +1,376 @@
+/* Application shell */
+.app-shell {
+  background: var(--canvas);
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--nav);
+  bottom: 0;
+  color: #b6cbc5;
+  display: flex;
+  flex-direction: column;
+  left: 0;
+  padding: 24px 15px 17px;
+  position: fixed;
+  top: 0;
+  width: 230px;
+  z-index: 30;
+}
+
+.sidebar__brand-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px 22px;
+}
+
+.sidebar__close {
+  background: transparent;
+  color: #9cb4ad;
+  display: none;
+}
+
+.workspace-switcher {
+  align-items: center;
+  background: rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 10px;
+  color: #fff;
+  display: flex;
+  gap: 9px;
+  margin-bottom: 25px;
+  min-height: 51px;
+  padding: 8px 9px;
+  text-align: left;
+  width: 100%;
+}
+
+.workspace-switcher__avatar {
+  align-items: center;
+  background: linear-gradient(145deg, #38d6a5, #1cae81);
+  border-radius: 8px;
+  color: #0e332a;
+  display: flex;
+  font-size: 10px;
+  font-weight: 850;
+  height: 33px;
+  justify-content: center;
+  width: 33px;
+}
+
+.workspace-switcher > span:nth-child(2) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.workspace-switcher small {
+  color: #6f9188;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.workspace-switcher strong {
+  font-size: 11px;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar__section-label {
+  color: #587970;
+  font-size: 8px;
+  font-weight: 760;
+  letter-spacing: 1.25px;
+  margin: 0 10px 7px;
+  text-transform: uppercase;
+}
+
+.sidebar__section-label--spaced {
+  margin-top: 21px;
+}
+
+.nav-item {
+  align-items: center;
+  background: transparent;
+  border-radius: 8px;
+  color: #9eb7b0;
+  display: flex;
+  font-size: 11px;
+  font-weight: 570;
+  gap: 11px;
+  min-height: 39px;
+  padding: 0 11px;
+  text-align: left;
+  transition: background 140ms ease, color 140ms ease;
+  width: 100%;
+}
+
+.nav-item:hover:not(.nav-item--disabled),
+.nav-item--active {
+  background: rgb(255 255 255 / 7%);
+  color: #fff;
+}
+
+.nav-item--active svg {
+  color: #4de0b2;
+}
+
+.nav-item span {
+  flex: 1;
+}
+
+.nav-item b {
+  align-items: center;
+  background: #2dc797;
+  border-radius: 99px;
+  color: #0c342b;
+  display: flex;
+  font-size: 8px;
+  height: 18px;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 5px;
+}
+
+.nav-item--disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.sidebar__bottom {
+  margin-top: auto;
+}
+
+.system-card {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: 9px;
+  margin-bottom: 8px;
+  padding: 11px;
+}
+
+.system-card div {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+}
+
+.system-card strong {
+  color: #c8d9d4;
+  font-size: 9px;
+}
+
+.system-card p {
+  color: #628079;
+  font-size: 8px;
+  margin: 5px 0 0 13px;
+}
+
+.system-card__pulse {
+  background: #40dcab;
+  border: 3px solid rgb(64 220 171 / 13%);
+  border-radius: 50%;
+  box-sizing: content-box;
+  height: 5px;
+  width: 5px;
+}
+
+.nav-item--support {
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+
+.sidebar-user {
+  align-items: center;
+  border-top: 1px solid rgb(255 255 255 / 7%);
+  display: flex;
+  gap: 8px;
+  padding: 14px 6px 0;
+}
+
+.avatar {
+  align-items: center;
+  background: #d7f7eb;
+  border: 1px solid #bce9da;
+  border-radius: 9px;
+  color: #1a6f58;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 9px;
+  font-weight: 800;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.avatar--small {
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+}
+
+.sidebar-user > span:nth-child(2) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar-user strong {
+  color: #e1eeea;
+  font-size: 10px;
+}
+
+.sidebar-user small {
+  color: #66847c;
+  font-size: 8px;
+  margin-top: 2px;
+}
+
+.sidebar-user button {
+  background: transparent;
+  color: #65847b;
+  padding: 4px;
+}
+
+.main-area {
+  margin-left: 230px;
+  min-height: 100vh;
+}
+
+.topbar {
+  align-items: center;
+  background: rgb(255 255 255 / 92%);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  height: 63px;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.mobile-menu {
+  background: transparent;
+  display: none;
+  padding: 4px;
+}
+
+.topbar__search {
+  align-items: center;
+  color: #84948f;
+  display: flex;
+  font-size: 10px;
+  gap: 9px;
+  max-width: 390px;
+  width: 100%;
+}
+
+.topbar__search span {
+  flex: 1;
+}
+
+.topbar__search kbd {
+  background: #f5f7f6;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: #7c8c88;
+  font-family: inherit;
+  font-size: 9px;
+  padding: 3px 6px;
+}
+
+.topbar__right {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.environment {
+  align-items: center;
+  background: #f0f6f4;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  color: #5f726c;
+  display: inline-flex;
+  font-size: 9px;
+  font-weight: 680;
+  gap: 6px;
+  padding: 6px 9px;
+}
+
+.environment i {
+  background: #2dca98;
+  border-radius: 50%;
+  height: 6px;
+  width: 6px;
+}
+
+.topbar .icon-button {
+  background: transparent;
+  border: 0;
+}
+
+.topbar .icon-button b {
+  background: var(--red);
+  border: 2px solid white;
+  border-radius: 50%;
+  height: 7px;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 7px;
+}
+
+.topbar__divider {
+  background: var(--line);
+  height: 24px;
+  width: 1px;
+}
+
+.content-area {
+  margin: 0 auto;
+  max-width: 1510px;
+  padding: 22px 28px 48px;
+}
+
+.demo-banner {
+  align-items: center;
+  background: #e8f7f1;
+  border: 1px solid #c8eadf;
+  border-radius: 9px;
+  color: #356a5b;
+  display: flex;
+  font-size: 10px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  min-height: 36px;
+  padding: 7px 11px;
+}
+
+.demo-banner > div,
+.demo-banner button {
+  align-items: center;
+  display: flex;
+  gap: 7px;
+}
+
+.demo-banner button {
+  background: transparent;
+  color: #38715f;
+  font-size: 9px;
+  font-weight: 700;
+}
